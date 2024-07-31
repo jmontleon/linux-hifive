@@ -354,6 +354,7 @@ static int ttm_bo_kmap_ttm(struct ttm_buffer_object *bo,
 	if (ret)
 		return ret;
 
+#ifndef CONFIG_SOC_SIFIVE_EIC7700
 	if (num_pages == 1 && ttm->caching == ttm_cached &&
 	    !(man->use_tt && (ttm->page_flags & TTM_TT_FLAG_DECRYPTED))) {
 		/*
@@ -374,6 +375,12 @@ static int ttm_bo_kmap_ttm(struct ttm_buffer_object *bo,
 		map->virtual = vmap(ttm->pages + start_page, num_pages,
 				    0, prot);
 	}
+#else
+	prot = ttm_io_prot(bo, mem, PAGE_KERNEL);
+	map->bo_kmap_type = ttm_bo_map_vmap;
+	map->virtual = vmap(ttm->pages + start_page, num_pages,
+				0, prot);
+#endif
 	return (!map->virtual) ? -ENOMEM : 0;
 }
 
